@@ -21,16 +21,20 @@
 # definition file).
 #
 
+BOARD_VENDOR := motorola-qcom
+
+# Platform
+TARGET_BOARD_PLATFORM_GPU := qcom-adreno320
+TARGET_BOARD_PLATFORM := msm8960
+TARGET_BOOTLOADER_BOARD_NAME := MSM8960
+TARGET_CPU_VARIANT := krait
+
 -include device/motorola/qcom-common/BoardConfigCommon.mk
 
 LOCAL_PATH := device/motorola/msm8960dt-common
 
 TARGET_SPECIFIC_HEADER_PATH += $(LOCAL_PATH)/include
 
-BOARD_VENDOR := motorola-msm8960
-
-# Platform
-TARGET_BOARD_PLATFORM_GPU := qcom-adreno320
 TARGET_QCOM_MEDIA_VARIANT := caf
 
 # Inline kernel building
@@ -48,6 +52,9 @@ WLAN_MODULES:
 	ln -sf /system/lib/modules/prima/prima_wlan.ko $(TARGET_OUT)/lib/modules/wlan.ko
 
 TARGET_KERNEL_MODULES += WLAN_MODULES
+
+# Audio
+BOARD_USES_LEGACY_ALSA_AUDIO := true
 
 # Graphics
 BOARD_EGL_CFG := $(LOCAL_PATH)/config/egl.cfg
