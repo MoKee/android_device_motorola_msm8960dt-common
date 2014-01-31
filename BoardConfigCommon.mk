@@ -36,6 +36,7 @@ LOCAL_PATH := device/motorola/msm8960dt-common
 TARGET_SPECIFIC_HEADER_PATH += $(LOCAL_PATH)/include
 
 TARGET_QCOM_MEDIA_VARIANT := caf
+TARGET_USES_WCNSS_CTRL := true
 
 # Inline kernel building
 TARGET_KERNEL_SOURCE := kernel/motorola/msm8960dt-common
@@ -74,6 +75,7 @@ TARGET_RECOVERY_PIXEL_FORMAT := "RGBA_8888"
 TARGET_RECOVERY_FSTAB := $(LOCAL_PATH)/rootdir/etc/fstab.qcom
 TARGET_USERIMAGES_USE_EXT4 := true
 TARGET_USERIMAGES_USE_F2FS := true
+BOARD_RECOVERY_SWIPE := true
 
 # TWRP
 TW_BRIGHTNESS_PATH := /sys/class/backlight/lcd-backlight/brightness
