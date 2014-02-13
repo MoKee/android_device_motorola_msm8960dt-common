@@ -32,42 +32,31 @@
 
     <!-- Vibrator pattern for feedback about a long screen/key press -->
     <integer-array name="config_longPressVibePattern">
-        <item>0</item>
-        <item>0</item>
         <item>105</item>
     </integer-array>
 
     <!-- Vibrator pattern for feedback about touching a virtual key -->
     <integer-array name="config_virtualKeyVibePattern">
-        <item>0</item>
-        <item>0</item>
         <item>24</item>
     </integer-array>
 
     <!-- Vibrator pattern for a very short but reliable vibration for soft keyboard tap -->
     <integer-array name="config_keyboardTapVibePattern">
-        <item>0</item>
-        <item>0</item>
         <item>5</item>
     </integer-array>
 
     <!-- Vibrator pattern for feedback about booting with safe mode disabled -->
     <integer-array name="config_safeModeDisabledVibePattern">
-        <item>0</item>
-        <item>0</item>
         <item>117</item>
     </integer-array>
 
     <!-- Vibrator pattern for feedback about booting with safe mode disabled -->
     <integer-array name="config_safeModeEnabledVibePattern">
-        <item>0</item>
-        <item>0</item>
         <item>94</item>
     </integer-array>
 
     <!-- Vibrator pattern for feedback about hitting a scroll barrier -->
     <integer-array name="config_scrollBarrierVibePattern">
-        <item>0</item>
         <item>20</item>
         <item>60</item>
         <item>20</item>
@@ -138,9 +127,6 @@
         <item>0</item>
     </integer-array>
 
-    <!-- Component name of the service providing geofence API support. -->
-    <string name="config_geofenceProvider" translatable="false">com.qualcomm.services.location</string>
-
     <!-- Do not translate. Defines the slots is Two Digit Number for dialing normally not USSD -->
     <string-array name="config_twoDigitNumberPattern" translatable="false">
     </string-array>
@@ -191,10 +177,6 @@
 
     <!-- Boolean indicating whether the wifi chipset has background scan support -->
     <bool translatable="false" name="config_wifi_background_scan_support">true</bool>
-
-    <!-- Enable overlay for all location components. -->
-    <bool name="config_enableNetworkLocationOverlay" translatable="false">false</bool>
-    <bool name="config_enableFusedLocationOverlay" translatable="false">false</bool>
 
     <!-- Performance profiles -->
     <string name="config_perf_profile_prop">sys.perf.profile</string>
