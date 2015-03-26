@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.cyanogenmod.doze.motorola;
+package com.cyanogenmod.settings.device;
 
 import android.app.Activity;
 import android.app.IntentService;
@@ -24,6 +24,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.hardware.SensorEvent;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -31,6 +32,8 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.UserHandle;
 import android.os.SystemClock;
+import android.os.Vibrator;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
@@ -41,6 +44,9 @@ public class MotoDozeService extends Service {
     private static final String TAG = "MotoDozeService";
 
     private static final String DOZE_INTENT = "com.android.systemui.doze.pulse";
+
+    private static final String GESTURE_CAMERA_KEY = "gesture_camera";
+    private static final String GESTURE_PICK_UP_KEY = "gesture_pick_up";
 
     private static final int SENSOR_WAKELOCK_DURATION = 200;
     private static final int MIN_PULSE_INTERVAL_MS = 10000;
@@ -53,6 +59,8 @@ public class MotoDozeService extends Service {
     private WakeLock mSensorWakeLock;
     private long mLastPulseTimestamp = 0;
     private boolean mSuppressPulse = false;
+    private boolean mCameraGestureEnabled = false;
+    private boolean mPickUpGestureEnabled = false;
 
     private MotoSensor.MotoSensorListener mListener = new MotoSensor.MotoSensorListener() {
         @Override
@@ -89,6 +97,9 @@ public class MotoDozeService extends Service {
         mStowSensor.registerListener(mListener);
         mCameraActivationSensor = new MotoSensor(mContext, MotoSensor.SENSOR_TYPE_MMI_CAMERA_ACTIVATION);
         mCameraActivationSensor.registerListener(mListener);
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        loadPreferences(sharedPrefs);
+        sharedPrefs.registerOnSharedPreferenceChangeListener(mPrefListener);
         PowerManager powerManager = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
         mSensorWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MotoSensorWakeLock");
     }
@@ -139,9 +150,14 @@ public class MotoDozeService extends Service {
         }
     }
 
-    private boolean isDozeEnabled() {
-        return Settings.Secure.getInt(mContext.getContentResolver(),
-            Settings.Secure.DOZE_ENABLED, 1) != 0;
+    private boolean isPickUpEnabled() {
+        return mPickUpGestureEnabled &&
+            (Settings.Secure.getInt(mContext.getContentResolver(),
+                                    Settings.Secure.DOZE_ENABLED, 1) != 0);
+    }
+
+    private boolean isCameraEnabled() {
+        return mCameraGestureEnabled;
     }
 
     private void handleFlatUp(SensorEvent event) {
@@ -161,33 +177,52 @@ public class MotoDozeService extends Service {
 
     private void handleStow(SensorEvent event) {
         boolean isStowed = (event.values[0] == 1);
+
         if (isStowed) {
-            mFlatDownSensor.disable();
-            mCameraActivationSensor.disable();
+            if (isPickUpEnabled()) {
+                mFlatDownSensor.disable();
+            }
+            if (isCameraEnabled()) {
+                mCameraActivationSensor.disable();
+            }
         } else {
-            mFlatDownSensor.enable();
-            mCameraActivationSensor.enable();
+            if (isPickUpEnabled()) {
+                mFlatDownSensor.enable();
+            }
+            if (isCameraEnabled()) {
+                mCameraActivationSensor.enable();
+            }
         }
         if (DEBUG) Log.d(TAG, "Stowed: " + isStowed);
     }
 
     private void handleCameraActivation(SensorEvent event) {
+        Vibrator v = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+        v.vibrate(500);
         launchCamera();
     }
 
     private void onDisplayOn() {
         if (DEBUG) Log.d(TAG, "Display on");
-        if (isDozeEnabled()) {
+
+        if (isPickUpEnabled() || isCameraEnabled()) {
             mStowSensor.disable();
+        }
+        if (isCameraEnabled()) {
+            mCameraActivationSensor.enable();
+        }
+        if (isPickUpEnabled()) {
             mFlatDownSensor.disable();
-            mCameraActivationSensor.disable();
         }
     }
 
     private void onDisplayOff() {
         if (DEBUG) Log.d(TAG, "Display off");
-        if (isDozeEnabled()) {
+
+        if (isPickUpEnabled() || isCameraEnabled()) {
             mStowSensor.enable();
+        }
+        if (isPickUpEnabled()) {
             /* Suppress first pulse on display off, hardware will always trigger one */
             mSuppressPulse = true;
         }
@@ -200,6 +235,28 @@ public class MotoDozeService extends Service {
                 onDisplayOff();
             } else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {
                 onDisplayOn();
+            }
+        }
+    };
+
+    private void loadPreferences(SharedPreferences sharedPreferences) {
+        mCameraGestureEnabled = sharedPreferences.getBoolean(GESTURE_CAMERA_KEY, false);
+        mPickUpGestureEnabled = sharedPreferences.getBoolean(GESTURE_PICK_UP_KEY, false);
+    }
+
+    private SharedPreferences.OnSharedPreferenceChangeListener mPrefListener =
+            new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+            if (GESTURE_CAMERA_KEY.equals(key)) {
+                mCameraGestureEnabled = sharedPreferences.getBoolean(GESTURE_CAMERA_KEY, false);
+                if (mCameraGestureEnabled) {
+                    mCameraActivationSensor.enable();
+                } else {
+                    mCameraActivationSensor.disable();
+                }
+            } else if (GESTURE_PICK_UP_KEY.equals(key)) {
+                mPickUpGestureEnabled = sharedPreferences.getBoolean(GESTURE_PICK_UP_KEY, false);
             }
         }
     };
