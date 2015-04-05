@@ -1,0 +1,6 @@
+[
+  {
+    "repository": "android_vendor_motorola_msm8960dt-common",
+    "target_path": "vendor/motorola/msm8960dt-common"
+  }
+]
