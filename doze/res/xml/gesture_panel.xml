@@ -41,6 +41,7 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        android:key="gestures_category"
         android:title="@string/shortcut_gestures_title" >
 
         <SwitchPreference
@@ -48,6 +49,12 @@
             android:defaultValue="true"
             android:title="@string/camera_gesture_title"
             android:summary="@string/camera_gesture_summary" />
+
+        <SwitchPreference
+            android:key="gesture_flashlight"
+            android:defaultValue="true"
+            android:title="@string/flashlight_gesture_title"
+            android:summary="@string/flashlight_gesture_summary" />
 
     </PreferenceCategory>
 
